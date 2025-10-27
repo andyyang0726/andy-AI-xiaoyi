@@ -9,12 +9,24 @@
 
 ## 🌟 核心特性
 
-### 1. 智能需求评估引擎
+### 1. 供应商企业注册入驻 ⭐ NEW
+- **4步渐进式注册流程**：基本信息 → AI能力 → 行业经验 → 成功案例
+- **AI能力详细展示**：12种技术方向，支持多个能力详情（技术栈、专业水平、成功案例）
+- **实时完成度评分**：0-100分动态评分，激励用户完善信息
+- **成功案例结构化**：项目背景、解决方案、项目成果三段式展示
+- **企业信息预览**：实时预览最终展示效果
+- **智能表单验证**：必填项、格式、长度、唯一性全面验证
+- 📚 [查看详细文档](SUPPLIER_REGISTRATION_GUIDE.md)
+- 🚀 [快速开始指南](SUPPLIER_REGISTRATION_QUICKSTART.md)
+- 🎬 [演示说明](DEMO_SUPPLIER_REGISTRATION.md)
+
+### 2. 智能需求评估引擎
 - **多维度评估**：数据健康度、技术可行性、项目准备度
 - **规则引擎**：基于行业最佳实践的智能评估规则
 - **详细报告**：生成专业的需求评估报告和改进建议
 
-### 2. 智能匹配推荐系统
+### 3. 智能匹配推荐系统
+- **双向匹配**：需求→供应商（正向）+ 供应商→需求（反向）
 - **6维度算法**：
   - 行业匹配度 (25%)
   - 语义相似度 (30%)
@@ -25,15 +37,21 @@
 - **排序优化**：综合加权评分，推荐最优供应商
 - **可解释性**：展示各维度得分，增强推荐透明度
 
-### 3. 企业认证体系
+### 4. 企业认证体系
 - **信用评分**：基于多维度的企业信用评分系统
 - **认证等级**：优选企业、认证企业、普通企业
 - **能力标签**：AI技术能力标签展示
+- **详细档案**：能力详情、行业经验、成功案例完整展示
 
-### 4. 需求全生命周期管理
+### 5. 需求全生命周期管理
 - **需求提交**：结构化的需求提交表单
 - **状态跟踪**：待审核、已发布、匹配中、已完成
 - **协作功能**：需求方与供应方在线沟通
+
+### 6. 供应方功能
+- **供应方主页**：企业信息卡片、统计数据、TOP5推荐需求
+- **推荐需求列表**：智能匹配的需求，显示匹配分数和详细评分
+- **需求浏览**：查看所有公开发布的需求（公开平台模式）
 
 ## 🚀 快速访问
 
@@ -43,18 +61,28 @@
 
 ### 测试账号
 ```
+供应方（小易智联）- 推荐使用 ⭐:
+邮箱: xiaoyi@xiaoyi.ai
+密码: xiaoyi123
+特点: 96分信用，优选企业，2个AI能力详情，2个成功案例
+
 需求方（长安汽车）:
 邮箱: changan@demo.com
 密码: demo123
 
-供应方（小易智联）:
-邮箱: xiaoyi@demo.com
-密码: demo123
-
 管理员:
 邮箱: admin@platform.com
-密码: demo123
+密码: admin123
 ```
+
+### 供应商企业入驻
+新供应商企业可以通过以下方式注册：
+1. 访问：https://andyyang0726.github.io/andy-AI-xiaoyi/login
+2. 点击"供应商企业入驻"按钮
+3. 按照4步流程填写详细信息
+4. 提交后等待审核（3个工作日内）
+
+💡 建议资料完成度达到80分以上，可获得更多精准推荐！
 
 ## 📁 项目结构
 
@@ -174,6 +202,12 @@ git subtree push --prefix frontend/dist origin gh-pages
 - `ai_capabilities`: AI能力标签
 - `credit_score`: 信用评分
 - `certification_level`: 认证等级
+- `capability_details`: AI能力详情列表（JSON）⭐ NEW
+- `industry_experience`: 行业经验列表（JSON）⭐ NEW
+- `success_cases`: 成功案例列表（JSON）⭐ NEW
+- `team_size`: 团队规模 ⭐ NEW
+- `team_structure`: 团队构成 ⭐ NEW
+- `certifications`: 认证资质（JSON）⭐ NEW
 
 #### users (用户表)
 - `id`: 主键
@@ -237,8 +271,11 @@ git subtree push --prefix frontend/dist origin gh-pages
 - [x] 企业管理功能
 - [x] 需求发布与管理
 - [x] 智能评估引擎
-- [x] 智能匹配推荐
+- [x] 双向智能匹配推荐
 - [x] 数据看板
+- [x] 供应商企业注册入驻 ⭐ NEW
+- [x] 供应方主页和推荐需求 ⭐ NEW
+- [x] 公开平台模式（供应商可查看所有需求）⭐ NEW
 
 ### 下一版本 (v1.1) - 规划中
 - [ ] 在线沟通功能
@@ -370,4 +407,8 @@ class MatchingService:
 📚 **更多文档**:
 - [详细使用指南](USER_GUIDE.md)
 - [部署修复说明](DEPLOYMENT_FIX.md)
+- [供应商注册功能说明](SUPPLIER_REGISTRATION_GUIDE.md) ⭐ NEW
+- [供应商注册快速指南](SUPPLIER_REGISTRATION_QUICKSTART.md) ⭐ NEW
+- [供应商注册演示说明](DEMO_SUPPLIER_REGISTRATION.md) ⭐ NEW
+- [供应商注册开发总结](SUPPLIER_REGISTRATION_SUMMARY.md) ⭐ NEW
 - [API文档](https://8000-ihia78ehq6oi6tkbljqri-02b9cc79.sandbox.novita.ai/api/docs)
