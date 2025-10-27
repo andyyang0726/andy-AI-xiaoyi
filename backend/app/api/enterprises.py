@@ -22,12 +22,56 @@ def generate_eid() -> str:
     return f"EID-{timestamp}-{random_str}"
 
 
+@router.post("/register", response_model=EnterpriseResponse, status_code=status.HTTP_201_CREATED)
+def register_enterprise(
+    enterprise_data: EnterpriseCreate,
+    db: Session = Depends(get_db)
+):
+    """供应商企业注册入驻"""
+    # 检查统一社会信用代码是否已存在
+    if enterprise_data.credit_code:
+        existing = db.query(Enterprise).filter(
+            Enterprise.credit_code == enterprise_data.credit_code
+        ).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="该企业信用代码已注册，请直接登录"
+            )
+    
+    # 检查企业名称是否已存在
+    existing_name = db.query(Enterprise).filter(
+        Enterprise.name == enterprise_data.name
+    ).first()
+    if existing_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="该企业名称已注册"
+        )
+    
+    # 创建企业（待审核状态）
+    enterprise_dict = enterprise_data.model_dump()
+    enterprise_dict['status'] = EnterpriseStatus.PENDING
+    enterprise_dict['credit_score'] = 80.0  # 初始信用分
+    
+    new_enterprise = Enterprise(
+        eid=generate_eid(),
+        **enterprise_dict
+    )
+    
+    db.add(new_enterprise)
+    db.commit()
+    db.refresh(new_enterprise)
+    
+    return new_enterprise
+
+
 @router.post("", response_model=EnterpriseResponse, status_code=status.HTTP_201_CREATED)
 def create_enterprise(
     enterprise_data: EnterpriseCreate,
     db: Session = Depends(get_db)
 ):
-    """创建企业"""
+    """创建企业（管理员使用）"""
     # 检查统一社会信用代码是否已存在
     if enterprise_data.credit_code:
         existing = db.query(Enterprise).filter(

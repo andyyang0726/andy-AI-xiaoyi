@@ -47,6 +47,14 @@ class Enterprise(Base):
     business_scope = Column(String(2000))  # 主营业务
     ai_capabilities = Column(JSON, default=list)  # AI相关能力标签
     
+    # 供应商详细信息（供应方企业专用）
+    capability_details = Column(JSON, default=list)  # AI能力详情列表
+    industry_experience = Column(JSON, default=list)  # 行业经验列表
+    success_cases = Column(JSON, default=list)  # 成功案例列表
+    team_size = Column(Integer, default=0)  # 团队规模
+    team_structure = Column(String(500))  # 团队构成
+    certifications = Column(JSON, default=list)  # 认证资质
+    
     # 认证信息
     status = Column(Enum(EnterpriseStatus), default=EnterpriseStatus.PENDING)
     certification_level = Column(String(50), default="普通会员")  # 普通会员/认证企业/优选企业

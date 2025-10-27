@@ -18,6 +18,14 @@ class EnterpriseBase(BaseModel):
     address: Optional[str] = None
     business_scope: Optional[str] = None
     ai_capabilities: List[str] = Field(default_factory=list)
+    
+    # 供应商详细信息
+    capability_details: Optional[List[dict]] = Field(default_factory=list)
+    industry_experience: Optional[List[dict]] = Field(default_factory=list)
+    success_cases: Optional[List[dict]] = Field(default_factory=list)
+    team_size: Optional[int] = 0
+    team_structure: Optional[str] = None
+    certifications: Optional[List[dict]] = Field(default_factory=list)
 
 
 class EnterpriseCreate(EnterpriseBase):
@@ -37,6 +45,12 @@ class EnterpriseUpdate(BaseModel):
     address: Optional[str] = None
     business_scope: Optional[str] = None
     ai_capabilities: Optional[List[str]] = None
+    capability_details: Optional[List[dict]] = None
+    industry_experience: Optional[List[dict]] = None
+    success_cases: Optional[List[dict]] = None
+    team_size: Optional[int] = None
+    team_structure: Optional[str] = None
+    certifications: Optional[List[dict]] = None
 
 
 class EnterpriseResponse(EnterpriseBase):

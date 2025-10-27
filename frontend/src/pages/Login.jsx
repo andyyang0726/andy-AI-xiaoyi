@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, message, Tabs } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
+import { Form, Input, Button, message, Tabs, Space, Divider } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, ShopOutlined } from '@ant-design/icons';
 import { authAPI } from '../services/api';
 
 const Login = () => {
@@ -132,6 +132,23 @@ const Login = () => {
       <div className="login-box">
         <h1 className="login-title">重庆AI供需对接平台</h1>
         <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} centered />
+        
+        <Divider style={{ marginTop: 32 }}>其他入口</Divider>
+        
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Button
+            icon={<ShopOutlined />}
+            onClick={() => navigate('/supplier-register')}
+            block
+            size="large"
+            type="dashed"
+          >
+            供应商企业入驻
+          </Button>
+          <div style={{ textAlign: 'center', color: '#999', fontSize: '12px' }}>
+            💡 供应商企业入驻后可获得精准需求推荐
+          </div>
+        </Space>
       </div>
     </div>
   );

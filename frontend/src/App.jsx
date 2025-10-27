@@ -11,6 +11,7 @@ import DemandCreate from './pages/DemandCreate';
 import DemandDetail from './pages/DemandDetail';
 import RecommendedDemands from './pages/RecommendedDemands';
 import SupplierHome from './pages/SupplierHome';
+import SupplierRegister from './pages/SupplierRegister';
 import './App.css';
 
 // 私有路由组件
@@ -25,6 +26,7 @@ function App() {
       <Router basename="/andy-AI-xiaoyi">
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/supplier-register" element={<SupplierRegister />} />
           <Route
             path="/"
             element={
