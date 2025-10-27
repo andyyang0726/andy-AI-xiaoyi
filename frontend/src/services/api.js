@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: 'https://8000-ihia78ehq6oi6tkbljqri-02b9cc79.sandbox.novita.ai/api/v1',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
