@@ -22,6 +22,67 @@ class MatchingService:
             "credit_score": 0.10          # 信用评分
         }
     
+    def match_demands_for_vendor(
+        self,
+        vendor: Enterprise,
+        db: Session,
+        top_k: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        为供应商推荐合适的需求（反向匹配）
+        
+        Args:
+            vendor: 供应商企业对象
+            db: 数据库会话
+            top_k: 返回top K个结果
+            
+        Returns:
+            推荐需求列表
+        """
+        from ..models import Demand, DemandStatus
+        
+        # 获取所有已发布的需求
+        demands = db.query(Demand).filter(
+            Demand.status.in_([DemandStatus.SUBMITTED, DemandStatus.EVALUATED, DemandStatus.MATCHED])
+        ).all()
+        
+        if not demands:
+            return []
+        
+        # 为每个需求计算匹配分数
+        matches = []
+        for demand in demands:
+            demand_data = {
+                "title": demand.title,
+                "description": demand.description,
+                "industry_tags": demand.industry_tags or [],
+                "scenario_tags": demand.scenario_tags or [],
+                "budget_max": demand.budget_max or 0,
+                "enterprise_location": "重庆"
+            }
+            
+            score_breakdown = self._calculate_match_score(demand_data, vendor)
+            
+            matches.append({
+                "demand_id": demand.id,
+                "demand_title": demand.title,
+                "demand_description": demand.description[:200] + "..." if len(demand.description) > 200 else demand.description,
+                "enterprise_id": demand.enterprise_id,
+                "industry_tags": demand.industry_tags,
+                "scenario_tags": demand.scenario_tags,
+                "budget_range": f"{demand.budget_min}-{demand.budget_max}" if demand.budget_min and demand.budget_max else "面议",
+                "score": score_breakdown["total_score"],
+                "score_breakdown": score_breakdown,
+                "match_reasons": self._generate_match_reasons(score_breakdown),
+                "created_at": demand.created_at.isoformat() if demand.created_at else None,
+                "status": demand.status.value if demand.status else "submitted"
+            })
+        
+        # 按分数排序
+        matches.sort(key=lambda x: x["score"], reverse=True)
+        
+        return matches[:top_k]
+    
     def match_vendors(
         self,
         demand_data: Dict[str, Any],
@@ -29,7 +90,7 @@ class MatchingService:
         top_k: int = 5
     ) -> List[Dict[str, Any]]:
         """
-        为需求匹配合适的供应商
+        为需求匹配合适的供应商（正向匹配）
         
         Args:
             demand_data: 需求数据

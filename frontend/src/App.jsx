@@ -9,6 +9,7 @@ import EnterpriseList from './pages/EnterpriseList';
 import DemandList from './pages/DemandList';
 import DemandCreate from './pages/DemandCreate';
 import DemandDetail from './pages/DemandDetail';
+import RecommendedDemands from './pages/RecommendedDemands';
 import './App.css';
 
 // 私有路由组件
@@ -36,6 +37,7 @@ function App() {
             <Route path="demands" element={<DemandList />} />
             <Route path="demands/create" element={<DemandCreate />} />
             <Route path="demands/:id" element={<DemandDetail />} />
+            <Route path="recommended" element={<RecommendedDemands />} />
           </Route>
         </Routes>
       </Router>

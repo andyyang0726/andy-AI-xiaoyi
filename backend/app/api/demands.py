@@ -215,6 +215,56 @@ def match_demand(
     return demand
 
 
+@router.get("/recommended/{enterprise_id}")
+def get_recommended_demands(
+    enterprise_id: int,
+    top_k: int = Query(10, ge=1, le=50),
+    db: Session = Depends(get_db)
+):
+    """
+    为供应商企业推荐匹配的需求
+    
+    Args:
+        enterprise_id: 供应商企业ID
+        top_k: 返回top K个推荐结果
+        db: 数据库会话
+        
+    Returns:
+        推荐需求列表
+    """
+    # 验证企业是否存在且为供应方
+    enterprise = db.query(Enterprise).filter(
+        Enterprise.id == enterprise_id
+    ).first()
+    
+    if not enterprise:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="企业不存在"
+        )
+    
+    from ..models import EnterpriseType
+    if enterprise.enterprise_type not in [EnterpriseType.SUPPLY, EnterpriseType.BOTH]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="只有供应方企业可以获取需求推荐"
+        )
+    
+    # 获取推荐需求
+    recommended_demands = matching_service.match_demands_for_vendor(
+        vendor=enterprise,
+        db=db,
+        top_k=top_k
+    )
+    
+    return {
+        "enterprise_id": enterprise_id,
+        "enterprise_name": enterprise.name,
+        "total": len(recommended_demands),
+        "recommendations": recommended_demands
+    }
+
+
 @router.delete("/{demand_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_demand(demand_id: int, db: Session = Depends(get_db)):
     """删除需求"""

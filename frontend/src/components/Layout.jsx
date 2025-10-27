@@ -13,7 +13,8 @@ import {
   BankOutlined,
   FileTextOutlined,
   UserOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  RocketOutlined
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = AntLayout;
@@ -47,6 +48,11 @@ const Layout = () => {
       key: '/demands',
       icon: <FileTextOutlined />,
       label: '需求管理',
+    },
+    {
+      key: '/recommended',
+      icon: <RocketOutlined />,
+      label: '推荐需求',
     },
   ];
 
