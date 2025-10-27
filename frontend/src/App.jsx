@@ -20,7 +20,7 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <ConfigProvider locale={zhCN}>
-      <Router>
+      <Router basename="/andy-AI-xiaoyi">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
