@@ -26,6 +26,14 @@ class EnterpriseBase(BaseModel):
     team_size: Optional[int] = 0
     team_structure: Optional[str] = None
     certifications: Optional[List[dict]] = Field(default_factory=list)
+    
+    # 需求方资质信息
+    qualification_status: Optional[str] = "unverified"
+    qualification_data: Optional[dict] = Field(default_factory=dict)
+    established_year: Optional[str] = None
+    main_products: Optional[str] = None
+    annual_revenue: Optional[str] = None
+    employee_count: Optional[int] = 0
 
 
 class EnterpriseCreate(EnterpriseBase):
@@ -51,6 +59,12 @@ class EnterpriseUpdate(BaseModel):
     team_size: Optional[int] = None
     team_structure: Optional[str] = None
     certifications: Optional[List[dict]] = None
+    qualification_status: Optional[str] = None
+    qualification_data: Optional[dict] = None
+    established_year: Optional[str] = None
+    main_products: Optional[str] = None
+    annual_revenue: Optional[str] = None
+    employee_count: Optional[int] = None
 
 
 class EnterpriseResponse(EnterpriseBase):
@@ -60,6 +74,9 @@ class EnterpriseResponse(EnterpriseBase):
     status: EnterpriseStatus
     certification_level: str
     credit_score: float
+    qualification_status: Optional[str] = None
+    qualification_submitted_at: Optional[datetime] = None
+    qualification_verified_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     

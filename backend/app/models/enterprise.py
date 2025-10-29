@@ -55,6 +55,16 @@ class Enterprise(Base):
     team_structure = Column(String(500))  # 团队构成
     certifications = Column(JSON, default=list)  # 认证资质
     
+    # 需求方资质信息（需求方企业专用）
+    qualification_status = Column(String(50), default="unverified")  # 资质状态：unverified/pending/verified/rejected
+    qualification_data = Column(JSON, default=dict)  # 资质详细数据
+    qualification_submitted_at = Column(DateTime)  # 资质提交时间
+    qualification_verified_at = Column(DateTime)  # 资质审核通过时间
+    established_year = Column(String(10))  # 成立年份
+    main_products = Column(String(500))  # 主要产品/服务
+    annual_revenue = Column(String(50))  # 年营业额
+    employee_count = Column(Integer, default=0)  # 员工人数
+    
     # 认证信息
     status = Column(Enum(EnterpriseStatus), default=EnterpriseStatus.PENDING)
     certification_level = Column(String(50), default="普通会员")  # 普通会员/认证企业/优选企业

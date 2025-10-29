@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Select, InputNumber, DatePicker, Card, message } from 'antd';
+import { Form, Input, Button, Select, InputNumber, DatePicker, Card, message, Modal, Alert, Space } from 'antd';
+import { ExclamationCircleOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { demandAPI } from '../services/api';
+import api from '../services/api';
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
@@ -10,7 +12,53 @@ const DemandCreate = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [canCreate, setCanCreate] = useState(null);
+  const [qualificationStatus, setQualificationStatus] = useState(null);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  useEffect(() => {
+    checkQualification();
+  }, []);
+
+  const checkQualification = async () => {
+    try {
+      const response = await api.get(`/enterprises/${user.enterprise_id}/can-create-demand`);
+      setCanCreate(response.data.can_create);
+      setQualificationStatus(response.data.qualification_status);
+      
+      if (!response.data.can_create) {
+        Modal.warning({
+          title: '无法创建需求',
+          icon: <ExclamationCircleOutlined />,
+          content: (
+            <div>
+              <p>{response.data.reason}</p>
+              {response.data.qualification_status === 'unverified' && (
+                <p>
+                  <Button 
+                    type="primary" 
+                    icon={<SafetyCertificateOutlined />}
+                    onClick={() => navigate('/qualification')}
+                  >
+                    立即完善企业资质
+                  </Button>
+                </p>
+              )}
+            </div>
+          ),
+          onOk: () => {
+            if (response.data.qualification_status === 'unverified') {
+              navigate('/qualification');
+            } else {
+              navigate('/demands');
+            }
+          }
+        });
+      }
+    } catch (error) {
+      message.error('检查资质状态失败');
+    }
+  };
 
   const handleSubmit = async (values) => {
     setLoading(true);
@@ -33,8 +81,52 @@ const DemandCreate = () => {
     }
   };
 
+  // 如果不能创建需求，显示提示信息
+  if (canCreate === false) {
+    return (
+      <Card title="创建新需求">
+        <Alert
+          message="无法创建需求"
+          description={
+            <Space direction="vertical">
+              <div>
+                {qualificationStatus === 'unverified' && '您的企业资质未提交，请先完善企业资质信息。'}
+                {qualificationStatus === 'pending' && '您的企业资质正在审核中，请等待审核结果。'}
+                {qualificationStatus === 'rejected' && '您的企业资质审核未通过，请重新提交。'}
+              </div>
+              {qualificationStatus === 'unverified' && (
+                <Button 
+                  type="primary" 
+                  icon={<SafetyCertificateOutlined />}
+                  onClick={() => navigate('/qualification')}
+                >
+                  立即完善企业资质
+                </Button>
+              )}
+            </Space>
+          }
+          type="warning"
+          showIcon
+        />
+      </Card>
+    );
+  }
+
+  // 如果还在检查中，显示加载状态
+  if (canCreate === null) {
+    return <Card title="创建新需求" loading />;
+  }
+
   return (
     <Card title="创建新需求">
+      <Alert
+        message="提示"
+        description="您的企业资质已通过审核，可以正常发布需求。"
+        type="success"
+        showIcon
+        closable
+        style={{ marginBottom: 16 }}
+      />
       <Form
         form={form}
         layout="vertical"

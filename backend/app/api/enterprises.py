@@ -188,3 +188,122 @@ def verify_enterprise(
     db.refresh(enterprise)
     
     return enterprise
+
+
+@router.put("/{enterprise_id}/qualification", response_model=EnterpriseResponse)
+def submit_qualification(
+    enterprise_id: int,
+    qualification_data: EnterpriseUpdate,
+    db: Session = Depends(get_db)
+):
+    """提交需求方企业资质信息"""
+    from datetime import datetime
+    
+    enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
+    
+    if not enterprise:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="企业不存在"
+        )
+    
+    # 检查企业类型
+    if enterprise.enterprise_type not in [EnterpriseType.DEMAND, EnterpriseType.BOTH]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="只有需求方企业需要提交资质信息"
+        )
+    
+    # 更新资质信息
+    update_data = qualification_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(enterprise, field, value)
+    
+    # 设置资质状态和提交时间
+    enterprise.qualification_status = "pending"
+    enterprise.qualification_submitted_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(enterprise)
+    
+    return enterprise
+
+
+@router.post("/{enterprise_id}/qualification/verify", response_model=EnterpriseResponse)
+def verify_qualification(
+    enterprise_id: int,
+    approve: bool = Query(..., description="是否通过资质审核"),
+    db: Session = Depends(get_db)
+):
+    """审核需求方企业资质（管理员使用）"""
+    from datetime import datetime
+    
+    enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
+    
+    if not enterprise:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="企业不存在"
+        )
+    
+    if enterprise.qualification_status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="资质状态不是待审核"
+        )
+    
+    if approve:
+        enterprise.qualification_status = "verified"
+        enterprise.qualification_verified_at = datetime.utcnow()
+        enterprise.status = EnterpriseStatus.VERIFIED
+        enterprise.certification_level = "认证企业"
+    else:
+        enterprise.qualification_status = "rejected"
+    
+    db.commit()
+    db.refresh(enterprise)
+    
+    return enterprise
+
+
+@router.get("/{enterprise_id}/can-create-demand")
+def check_can_create_demand(
+    enterprise_id: int,
+    db: Session = Depends(get_db)
+):
+    """检查企业是否可以创建需求"""
+    enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
+    
+    if not enterprise:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="企业不存在"
+        )
+    
+    # 检查企业类型
+    if enterprise.enterprise_type not in [EnterpriseType.DEMAND, EnterpriseType.BOTH]:
+        return {
+            "can_create": False,
+            "reason": "企业类型不是需求方",
+            "qualification_status": None
+        }
+    
+    # 检查资质状态
+    qualification_status = enterprise.qualification_status or "unverified"
+    
+    can_create = qualification_status == "verified"
+    
+    reason = ""
+    if qualification_status == "unverified":
+        reason = "企业资质未提交，请先完善企业资质信息"
+    elif qualification_status == "pending":
+        reason = "企业资质审核中，请等待审核结果"
+    elif qualification_status == "rejected":
+        reason = "企业资质审核未通过，请重新提交"
+    
+    return {
+        "can_create": can_create,
+        "reason": reason,
+        "qualification_status": qualification_status,
+        "enterprise_name": enterprise.name
+    }

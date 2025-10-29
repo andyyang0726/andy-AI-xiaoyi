@@ -15,7 +15,8 @@ import {
   UserOutlined,
   LogoutOutlined,
   RocketOutlined,
-  HomeOutlined
+  HomeOutlined,
+  SafetyCertificateOutlined
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = AntLayout;
@@ -49,6 +50,11 @@ const Layout = () => {
       key: '/enterprises',
       icon: <BankOutlined />,
       label: '企业管理',
+    },
+    {
+      key: '/qualification',
+      icon: <SafetyCertificateOutlined />,
+      label: '企业资质',
     },
     {
       key: '/demands',
