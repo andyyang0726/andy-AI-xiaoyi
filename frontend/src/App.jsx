@@ -22,9 +22,11 @@ const PrivateRoute = ({ children }) => {
 };
 
 function App() {
+  const basename = import.meta.env.MODE === 'production' ? '/andy-AI-xiaoyi' : '';
+  
   return (
     <ConfigProvider locale={zhCN}>
-      <Router basename="/andy-AI-xiaoyi">
+      <Router basename={basename}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/supplier-register" element={<SupplierRegister />} />
