@@ -4,6 +4,7 @@ import {
   Steps,
   Form,
   Input,
+  InputNumber,
   Select,
   Button,
   Card,
@@ -26,7 +27,8 @@ import {
   CheckCircleOutlined,
   UploadOutlined,
   InfoCircleOutlined,
-  EyeOutlined
+  EyeOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 import api from '../services/api';
 
