@@ -28,6 +28,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import EnterpriseRoleSelection from '../components/EnterpriseRoleSelection';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [roleSelectionVisible, setRoleSelectionVisible] = useState(false);
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
 
@@ -215,18 +217,23 @@ const Profile = () => {
             message="未关联企业"
             description={
               <div>
-                <p>您的账号尚未关联企业信息。</p>
-                <Space>
+                <p>您的账号尚未关联企业信息。请选择您的企业角色并完成资质注册。</p>
+                <p style={{ marginTop: 8, color: '#666' }}>
+                  <strong>需求方企业</strong>：需要AI技术解决方案的企业<br/>
+                  <strong>供应方企业</strong>：提供AI技术服务的企业
+                </p>
+                <Space style={{ marginTop: 16 }}>
                   <Button 
                     type="primary" 
+                    size="large"
+                    onClick={() => setRoleSelectionVisible(true)}
+                  >
+                    选择角色并注册企业
+                  </Button>
+                  <Button 
                     onClick={() => navigate('/enterprises')}
                   >
                     查看企业列表
-                  </Button>
-                  <Button 
-                    onClick={() => navigate('/supplier-register')}
-                  >
-                    供应商企业入驻
                   </Button>
                 </Space>
               </div>
@@ -429,6 +436,18 @@ const Profile = () => {
     );
   };
 
+  const handleRoleSelection = (role) => {
+    setRoleSelectionVisible(false);
+    // 根据角色导航到不同的注册页面
+    if (role === 'demand') {
+      // 需求方 - 跳转到简化的资质录入页面
+      navigate('/qualification');
+    } else if (role === 'supply') {
+      // 供应方 - 跳转到详细的供应商注册页面
+      navigate('/supplier-register');
+    }
+  };
+
   const tabItems = [
     {
       key: 'user',
@@ -557,6 +576,13 @@ const Profile = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* 企业角色选择弹窗 */}
+      <EnterpriseRoleSelection
+        visible={roleSelectionVisible}
+        onSelect={handleRoleSelection}
+        onCancel={() => setRoleSelectionVisible(false)}
+      />
     </div>
   );
 };

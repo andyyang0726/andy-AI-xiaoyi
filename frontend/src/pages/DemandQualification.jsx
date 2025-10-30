@@ -58,6 +58,7 @@ const DemandQualification = () => {
   const [enterpriseInfo, setEnterpriseInfo] = useState(null);
   const [formData, setFormData] = useState({
     // 企业基本信息
+    name: '',
     credit_code: '',
     legal_person: '',
     size: '',
@@ -163,6 +164,17 @@ const DemandQualification = () => {
         style={{ marginBottom: 24 }}
       />
       
+      <Form.Item
+        label="企业名称"
+        name="name"
+        rules={[{ required: true, message: '请输入企业名称' }]}
+      >
+        <Input
+          placeholder="请输入企业全称"
+          size="large"
+        />
+      </Form.Item>
+
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
@@ -529,16 +541,45 @@ const DemandQualification = () => {
       const values = await form.validateFields();
       setLoading(true);
 
-      // 构造提交数据
-      const submitData = {
-        ...values,
-        qualification_status: 'pending',  // 待审核状态
-        qualification_submitted_at: new Date().toISOString()
+      const user = JSON.parse(localStorage.getItem('user'));
+      
+      // 构造企业数据
+      const enterpriseData = {
+        name: values.name || '企业名称',  // 需要添加企业名称字段
+        enterprise_type: 'DEMAND',  // 需求方企业
+        credit_code: values.credit_code,
+        legal_person: values.legal_person,
+        size: values.size,
+        address: values.address,
+        business_scope: values.business_scope,
+        contact_person: values.contact_person,
+        contact_phone: values.contact_phone,
+        contact_email: values.contact_email,
+        industry_tags: values.industry_tags || [],
+        main_products: values.main_products,
+        annual_revenue: values.annual_revenue,
+        employee_count: values.employee_count || 0,
+        established_year: values.established_year,
+        qualification_status: 'pending',
+        qualification_submitted_at: new Date().toISOString(),
+        // 文件信息（实际项目中需要上传文件并获取URL）
+        business_license: values.business_license,
+        registration_certificate: values.registration_certificate,
+        tax_certificate: values.tax_certificate
       };
 
-      // 调用API提交资质信息
-      const user = JSON.parse(localStorage.getItem('user'));
-      await api.put(`/enterprises/${user.enterprise_id}/qualification`, submitData);
+      let response;
+      if (user.enterprise_id) {
+        // 更新现有企业资质
+        response = await api.put(`/enterprises/${user.enterprise_id}/qualification`, enterpriseData);
+      } else {
+        // 创建新企业
+        response = await api.post('/enterprises', enterpriseData);
+        
+        // 更新用户的enterprise_id
+        const updatedUser = { ...user, enterprise_id: response.id };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
       
       Modal.success({
         title: '资质信息提交成功！',
@@ -549,13 +590,14 @@ const DemandQualification = () => {
             <p>如有问题，请联系平台客服：400-xxx-xxxx</p>
           </div>
         ),
-        onOk: () => navigate('/demands')
+        onOk: () => navigate('/profile')
       });
 
     } catch (error) {
       if (error.errorFields) {
         message.error('请完善必填信息');
       } else {
+        console.error('Submit error:', error);
         message.error(error.response?.data?.detail || '提交失败，请重试');
       }
     } finally {
@@ -626,38 +668,8 @@ const DemandQualification = () => {
     setCurrentStep(currentStep - 1);
   };
 
-  // 检查用户是否有企业
+  // 获取用户信息（允许没有企业ID的用户访问，用于创建新企业）
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (!user.enterprise_id) {
-    return (
-      <div style={{ background: '#f0f2f5', minHeight: '100vh', padding: '24px' }}>
-        <Card style={{ maxWidth: 800, margin: '0 auto' }}>
-          <Alert
-            message="无法访问企业资质页面"
-            description={
-              <div>
-                <p>您的账号尚未关联企业，无法录入企业资质信息。</p>
-                <p>企业资质录入功能仅适用于需求方企业用户。</p>
-                <Space style={{ marginTop: 16 }}>
-                  <Button type="primary" onClick={() => navigate('/')}>
-                    返回首页
-                  </Button>
-                  <Button onClick={() => navigate('/enterprises')}>
-                    查看企业列表
-                  </Button>
-                  <Button onClick={() => navigate('/supplier-register')}>
-                    供应商企业入驻
-                  </Button>
-                </Space>
-              </div>
-            }
-            type="warning"
-            showIcon
-          />
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div style={{ background: '#f0f2f5', minHeight: '100vh', padding: '24px' }}>
