@@ -20,7 +20,8 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000", 
         "http://localhost:5173",
-        "https://andyyang0726.github.io"
+        "https://andyyang0726.github.io",
+        "https://5173-ihia78ehq6oi6tkbljqri-02b9cc79.sandbox.novita.ai"
     ]
     
     class Config:
