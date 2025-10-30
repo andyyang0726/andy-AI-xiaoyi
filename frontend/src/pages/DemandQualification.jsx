@@ -92,17 +92,13 @@ const DemandQualification = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       
-      // 检查用户是否有关联企业
+      // 如果用户没有关联企业，显示提示但允许继续（用于创建新企业）
       if (!user.enterprise_id) {
-        Modal.warning({
-          title: '未关联企业',
-          content: '您的账号尚未关联企业，无法录入企业资质。请先完成企业注册或联系管理员关联企业。',
-          okText: '返回首页',
-          onOk: () => navigate('/')
-        });
+        message.info('您尚未关联企业，请填写以下信息创建企业');
         return;
       }
       
+      // 如果有企业ID，获取企业信息
       const response = await api.get(`/enterprises/${user.enterprise_id}`);
       setEnterpriseInfo(response.data);
       
@@ -114,9 +110,37 @@ const DemandQualification = () => {
           onOk: () => navigate('/demands/create')
         });
       }
+      
+      // 预填充表单数据
+      if (response.data) {
+        setFormData({
+          name: response.data.name || '',
+          credit_code: response.data.credit_code || '',
+          legal_person: response.data.legal_person || '',
+          size: response.data.size || '',
+          address: response.data.address || '',
+          business_scope: response.data.business_scope || '',
+          contact_person: response.data.contact_person || '',
+          contact_phone: response.data.contact_phone || '',
+          contact_email: response.data.contact_email || '',
+          industry_tags: response.data.industry_tags || [],
+          main_products: response.data.main_products || '',
+          annual_revenue: response.data.annual_revenue || '',
+          employee_count: response.data.employee_count || 0,
+          established_year: response.data.established_year || '',
+          business_license: null,
+          registration_certificate: null,
+          tax_certificate: null,
+          other_certificates: []
+        });
+        form.setFieldsValue(response.data);
+      }
     } catch (error) {
       console.error('获取企业信息失败:', error);
-      message.error('获取企业信息失败: ' + (error.response?.data?.detail || '未知错误'));
+      // 如果获取失败，不影响页面显示，允许用户继续填写
+      if (error.response?.status !== 404) {
+        message.warning('获取企业信息失败，您可以继续填写新的企业信息');
+      }
     }
   };
 
