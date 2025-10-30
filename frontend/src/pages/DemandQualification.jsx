@@ -90,6 +90,18 @@ const DemandQualification = () => {
   const fetchEnterpriseInfo = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
+      
+      // 检查用户是否有关联企业
+      if (!user.enterprise_id) {
+        Modal.warning({
+          title: '未关联企业',
+          content: '您的账号尚未关联企业，无法录入企业资质。请先完成企业注册或联系管理员关联企业。',
+          okText: '返回首页',
+          onOk: () => navigate('/')
+        });
+        return;
+      }
+      
       const response = await api.get(`/enterprises/${user.enterprise_id}`);
       setEnterpriseInfo(response.data);
       
@@ -102,7 +114,8 @@ const DemandQualification = () => {
         });
       }
     } catch (error) {
-      message.error('获取企业信息失败');
+      console.error('获取企业信息失败:', error);
+      message.error('获取企业信息失败: ' + (error.response?.data?.detail || '未知错误'));
     }
   };
 
@@ -612,6 +625,39 @@ const DemandQualification = () => {
     setFormData({ ...formData, ...currentValues });
     setCurrentStep(currentStep - 1);
   };
+
+  // 检查用户是否有企业
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!user.enterprise_id) {
+    return (
+      <div style={{ background: '#f0f2f5', minHeight: '100vh', padding: '24px' }}>
+        <Card style={{ maxWidth: 800, margin: '0 auto' }}>
+          <Alert
+            message="无法访问企业资质页面"
+            description={
+              <div>
+                <p>您的账号尚未关联企业，无法录入企业资质信息。</p>
+                <p>企业资质录入功能仅适用于需求方企业用户。</p>
+                <Space style={{ marginTop: 16 }}>
+                  <Button type="primary" onClick={() => navigate('/')}>
+                    返回首页
+                  </Button>
+                  <Button onClick={() => navigate('/enterprises')}>
+                    查看企业列表
+                  </Button>
+                  <Button onClick={() => navigate('/supplier-register')}>
+                    供应商企业入驻
+                  </Button>
+                </Space>
+              </div>
+            }
+            type="warning"
+            showIcon
+          />
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: '#f0f2f5', minHeight: '100vh', padding: '24px' }}>
