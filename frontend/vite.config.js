@@ -6,6 +6,12 @@ export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/andy-AI-xiaoyi/' : '/',
   server: {
     host: '0.0.0.0',
-    port: 5173
+    port: 5173,
+    strictPort: false,
+    allowedHosts: [
+      '.sandbox.novita.ai',
+      'localhost',
+      '127.0.0.1'
+    ]
   }
 }))
