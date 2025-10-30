@@ -13,6 +13,7 @@ import RecommendedDemands from './pages/RecommendedDemands';
 import SupplierHome from './pages/SupplierHome';
 import SupplierRegister from './pages/SupplierRegister';
 import DemandQualification from './pages/DemandQualification';
+import Profile from './pages/Profile';
 import './App.css';
 
 // 私有路由组件
@@ -39,6 +40,7 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="enterprises" element={<EnterpriseList />} />
             <Route path="demands" element={<DemandList />} />
             <Route path="demands/create" element={<DemandCreate />} />

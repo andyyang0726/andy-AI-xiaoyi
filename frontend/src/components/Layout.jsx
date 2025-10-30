@@ -68,6 +68,14 @@ const Layout = () => {
     },
   ];
 
+  const handleUserMenuClick = ({ key }) => {
+    if (key === 'profile') {
+      navigate('/profile');
+    } else if (key === 'logout') {
+      handleLogout();
+    }
+  };
+
   const userMenuItems = [
     {
       key: 'profile',
@@ -78,7 +86,6 @@ const Layout = () => {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: '退出登录',
-      onClick: handleLogout,
     },
   ];
 
@@ -121,7 +128,7 @@ const Layout = () => {
           <Title level={4} style={{ margin: 0 }}>
             重庆人工智能供需对接平台 MVP
           </Title>
-          <Dropdown menu={{ items: userMenuItems }}>
+          <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }}>
             <Space style={{ cursor: 'pointer' }}>
               <Avatar icon={<UserOutlined />} />
               <span>{user.full_name || user.email}</span>
