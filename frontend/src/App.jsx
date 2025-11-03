@@ -32,7 +32,6 @@ function App() {
       <Router basename={basename}>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/supplier-register" element={<SupplierRegister />} />
           <Route
             path="/"
             element={
@@ -49,6 +48,7 @@ function App() {
             <Route path="demands/:id" element={<DemandDetail />} />
             <Route path="recommended" element={<RecommendedDemands />} />
             <Route path="supplier-home" element={<SupplierHome />} />
+            <Route path="supplier-register" element={<SupplierRegister />} />
             <Route path="qualification" element={<DemandQualification />} />
             <Route path="matched-suppliers" element={<MatchedSuppliers />} />
             <Route path="matched-clients" element={<MatchedClients />} />

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, message, Tabs, Space, Divider } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, ShopOutlined } from '@ant-design/icons';
+import { Form, Input, Button, message, Tabs, Radio, Space } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { authAPI } from '../services/api';
 
 const Login = () => {
@@ -66,7 +66,22 @@ const Login = () => {
   );
 
   const registerForm = (
-    <Form onFinish={handleRegister} size="large">
+    <Form onFinish={handleRegister} size="large" initialValues={{ role: 'demand' }}>
+      <Form.Item
+        name="role"
+        label="我是"
+        rules={[{ required: true, message: '请选择角色' }]}
+      >
+        <Radio.Group buttonStyle="solid">
+          <Radio.Button value="demand" style={{ width: '50%', textAlign: 'center' }}>
+            需求方企业
+          </Radio.Button>
+          <Radio.Button value="supply" style={{ width: '50%', textAlign: 'center' }}>
+            供应商企业
+          </Radio.Button>
+        </Radio.Group>
+      </Form.Item>
+      
       <Form.Item
         name="email"
         rules={[
@@ -114,6 +129,11 @@ const Login = () => {
       >
         <Input.Password prefix={<LockOutlined />} placeholder="确认密码" />
       </Form.Item>
+      
+      <div style={{ marginBottom: 16, padding: '12px', background: '#f0f9ff', borderRadius: '6px', fontSize: '13px', color: '#0369a1' }}>
+        💡 提示：注册后需要完善企业资质信息才能使用完整功能
+      </div>
+      
       <Form.Item>
         <Button type="primary" htmlType="submit" block loading={loading}>
           注册
@@ -132,23 +152,6 @@ const Login = () => {
       <div className="login-box">
         <h1 className="login-title">企业AI需求对接平台</h1>
         <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} centered />
-        
-        <Divider style={{ marginTop: 32 }}>其他入口</Divider>
-        
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Button
-            icon={<ShopOutlined />}
-            onClick={() => navigate('/supplier-register')}
-            block
-            size="large"
-            type="dashed"
-          >
-            供应商企业入驻
-          </Button>
-          <div style={{ textAlign: 'center', color: '#999', fontSize: '12px' }}>
-            💡 供应商企业入驻后可获得精准需求推荐
-          </div>
-        </Space>
       </div>
     </div>
   );
