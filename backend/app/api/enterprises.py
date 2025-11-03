@@ -3,8 +3,13 @@ from sqlalchemy.orm import Session
 from typing import List
 import random
 import string
-from ..core import get_db
-from ..models import Enterprise, EnterpriseStatus
+from ..core import get_db, get_current_user_dependency
+from ..core.permissions import (
+    filter_enterprises_by_permission,
+    PermissionChecker,
+    get_permission_checker
+)
+from ..models import Enterprise, EnterpriseStatus, User, UserRole, EnterpriseType
 from ..schemas import (
     EnterpriseCreate,
     EnterpriseUpdate,
@@ -69,9 +74,17 @@ def register_enterprise(
 @router.post("", response_model=EnterpriseResponse, status_code=status.HTTP_201_CREATED)
 def create_enterprise(
     enterprise_data: EnterpriseCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    permissions: PermissionChecker = Depends(get_permission_checker)
 ):
-    """创建企业（管理员使用）"""
+    """创建企业 - 仅管理员可以直接创建"""
+    # 检查是否是管理员
+    if not permissions.is_admin():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="只有管理员可以直接创建企业，请使用注册接口"
+        )
+    
     # 检查统一社会信用代码是否已存在
     if enterprise_data.credit_code:
         existing = db.query(Enterprise).filter(
@@ -102,12 +115,23 @@ def list_enterprises(
     limit: int = Query(20, ge=1, le=100),
     status_filter: str = Query(None),
     enterprise_type: str = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_dependency)
 ):
-    """获取企业列表"""
+    """获取企业列表 - 根据用户角色过滤"""
     query = db.query(Enterprise)
     
-    # 应用过滤器
+    # 根据用户权限过滤（只有管理员可以看到所有企业）
+    # 需求方和供应方只能看到自己的企业和匹配的企业
+    # 但在列表页面，为简化逻辑，非管理员只能看自己的企业
+    if current_user.role != UserRole.ADMIN:
+        if current_user.enterprise_id:
+            query = query.filter(Enterprise.id == current_user.enterprise_id)
+        else:
+            # 如果没有关联企业，返回空列表
+            query = query.filter(False)
+    
+    # 应用额外过滤器
     if status_filter:
         query = query.filter(Enterprise.status == status_filter)
     
@@ -124,14 +148,26 @@ def list_enterprises(
 
 
 @router.get("/{enterprise_id}", response_model=EnterpriseResponse)
-def get_enterprise(enterprise_id: int, db: Session = Depends(get_db)):
-    """获取企业详情"""
+def get_enterprise(
+    enterprise_id: int,
+    db: Session = Depends(get_db),
+    permissions: PermissionChecker = Depends(get_permission_checker)
+):
+    """获取企业详情 - 检查查看权限"""
     enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
     
     if not enterprise:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="企业不存在"
+        )
+    
+    # 检查是否有权限查看该企业
+    # TODO: 需要根据匹配关系来判断，这里先用基本检查
+    if not permissions.can_view_enterprise(enterprise_id, matched_enterprise_ids=[]):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="没有权限查看该企业"
         )
     
     return enterprise
@@ -141,9 +177,10 @@ def get_enterprise(enterprise_id: int, db: Session = Depends(get_db)):
 def update_enterprise(
     enterprise_id: int,
     enterprise_data: EnterpriseUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_dependency)
 ):
-    """更新企业信息"""
+    """更新企业信息 - 仅自己的企业和管理员可以修改"""
     enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
     
     if not enterprise:
@@ -151,6 +188,14 @@ def update_enterprise(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="企业不存在"
         )
+    
+    # 检查是否有权限修改
+    if current_user.role != UserRole.ADMIN:
+        if current_user.enterprise_id != enterprise_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="只能修改自己的企业信息"
+            )
     
     # 更新字段
     update_data = enterprise_data.model_dump(exclude_unset=True)
@@ -167,9 +212,17 @@ def update_enterprise(
 def verify_enterprise(
     enterprise_id: int,
     approve: bool = Query(..., description="是否通过审核"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    permissions: PermissionChecker = Depends(get_permission_checker)
 ):
-    """审核企业"""
+    """审核企业 - 仅管理员可以审核"""
+    # 检查是否是管理员
+    if not permissions.is_admin():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="只有管理员可以审核企业"
+        )
+    
     enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
     
     if not enterprise:
@@ -233,10 +286,18 @@ def submit_qualification(
 def verify_qualification(
     enterprise_id: int,
     approve: bool = Query(..., description="是否通过资质审核"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    permissions: PermissionChecker = Depends(get_permission_checker)
 ):
-    """审核需求方企业资质（管理员使用）"""
+    """审核需求方企业资质 - 仅管理员可以审核"""
     from datetime import datetime
+    
+    # 检查是否是管理员
+    if not permissions.can_approve_qualification():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="只有管理员可以审核资质"
+        )
     
     enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
     

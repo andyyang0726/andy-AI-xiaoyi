@@ -25,7 +25,8 @@ class User(Base):
     full_name = Column(String(100))
     
     # 角色与权限
-    role = Column(Enum(UserRole), default=UserRole.DEMAND, nullable=False)
+    # 使用values_callable让SQLAlchemy使用enum的value而不是name
+    role = Column(Enum(UserRole, values_callable=lambda x: [e.value for e in x]), default=UserRole.DEMAND, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
     

@@ -13,6 +13,8 @@ import RecommendedDemands from './pages/RecommendedDemands';
 import SupplierHome from './pages/SupplierHome';
 import SupplierRegister from './pages/SupplierRegister';
 import DemandQualification from './pages/DemandQualification';
+import MatchedSuppliers from './pages/MatchedSuppliers';
+import MatchedClients from './pages/MatchedClients';
 import Profile from './pages/Profile';
 import './App.css';
 
@@ -48,6 +50,8 @@ function App() {
             <Route path="recommended" element={<RecommendedDemands />} />
             <Route path="supplier-home" element={<SupplierHome />} />
             <Route path="qualification" element={<DemandQualification />} />
+            <Route path="matched-suppliers" element={<MatchedSuppliers />} />
+            <Route path="matched-clients" element={<MatchedClients />} />
           </Route>
         </Routes>
       </Router>

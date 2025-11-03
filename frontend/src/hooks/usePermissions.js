@@ -94,7 +94,7 @@ export const usePermissions = () => {
           { key: '/', label: '我的工作台', visible: true },
           { key: '/supplier-register', label: '企业资质', visible: true },
           { key: '/supplier-home', label: '企业主页', visible: true },
-          { key: '/recommended', label: '推荐需求', visible: true },
+          { key: '/matched-clients', label: '匹配客户', visible: true },
           ...baseItems
         ];
       }
