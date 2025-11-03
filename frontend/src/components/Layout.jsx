@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Layout as AntLayout,
@@ -6,7 +6,8 @@ import {
   Avatar,
   Dropdown,
   Space,
-  Typography
+  Typography,
+  Tag
 } from 'antd';
 import {
   DashboardOutlined,
@@ -16,8 +17,10 @@ import {
   LogoutOutlined,
   RocketOutlined,
   HomeOutlined,
-  SafetyCertificateOutlined
+  SafetyCertificateOutlined,
+  TeamOutlined
 } from '@ant-design/icons';
+import { usePermissions } from '../hooks/usePermissions';
 
 const { Header, Sider, Content } = AntLayout;
 const { Title } = Typography;
@@ -26,6 +29,7 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const permissions = usePermissions();
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -35,38 +39,39 @@ const Layout = () => {
     navigate('/login');
   };
 
-  const menuItems = [
-    {
-      key: '/',
-      icon: <DashboardOutlined />,
-      label: '工作台',
-    },
-    {
-      key: '/supplier-home',
-      icon: <HomeOutlined />,
-      label: '供应方主页',
-    },
-    {
-      key: '/enterprises',
-      icon: <BankOutlined />,
-      label: '企业管理',
-    },
-    {
-      key: '/qualification',
-      icon: <SafetyCertificateOutlined />,
-      label: '企业资质',
-    },
-    {
-      key: '/demands',
-      icon: <FileTextOutlined />,
-      label: '需求管理',
-    },
-    {
-      key: '/recommended',
-      icon: <RocketOutlined />,
-      label: '推荐需求',
-    },
-  ];
+  // 根据用户角色动态生成菜单
+  const menuItems = useMemo(() => {
+    const iconMap = {
+      '/': <DashboardOutlined />,
+      '/enterprises': <BankOutlined />,
+      '/demands': <FileTextOutlined />,
+      '/recommended': <RocketOutlined />,
+      '/qualification': <SafetyCertificateOutlined />,
+      '/supplier-register': <SafetyCertificateOutlined />,
+      '/supplier-home': <HomeOutlined />,
+      '/matched-suppliers': <TeamOutlined />,
+      '/profile': <UserOutlined />
+    };
+
+    return permissions.getMenuItems().map(item => ({
+      ...item,
+      icon: iconMap[item.key] || <FileTextOutlined />
+    }));
+  }, [permissions.role]);
+
+  // 获取角色标签
+  const getRoleTag = () => {
+    if (permissions.isAdmin) {
+      return <Tag color="red">管理员</Tag>;
+    }
+    if (permissions.isDemand) {
+      return <Tag color="blue">需求方</Tag>;
+    }
+    if (permissions.isSupply) {
+      return <Tag color="green">供应方</Tag>;
+    }
+    return null;
+  };
 
   const handleUserMenuClick = ({ key }) => {
     if (key === 'profile') {
@@ -125,9 +130,12 @@ const Layout = () => {
           alignItems: 'center',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
-          <Title level={4} style={{ margin: 0 }}>
-            企业AI需求对接平台
-          </Title>
+          <Space>
+            <Title level={4} style={{ margin: 0 }}>
+              企业AI需求对接平台
+            </Title>
+            {getRoleTag()}
+          </Space>
           <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }}>
             <Space style={{ cursor: 'pointer' }}>
               <Avatar icon={<UserOutlined />} />
