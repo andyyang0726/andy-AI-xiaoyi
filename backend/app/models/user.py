@@ -7,10 +7,9 @@ from ..core.database import Base
 
 class UserRole(str, enum.Enum):
     """用户角色"""
-    ADMIN = "admin"  # 平台管理员
-    ENTERPRISE_ADMIN = "enterprise_admin"  # 企业管理员
-    ENTERPRISE_USER = "enterprise_user"  # 企业普通用户
-    EXPERT = "expert"  # 行业专家
+    ADMIN = "admin"  # 平台管理员 - 可查看所有数据
+    DEMAND = "demand"  # 需求方企业用户 - 只能看自己的需求和匹配的供应商
+    SUPPLY = "supply"  # 供应方企业用户 - 可看所有需求和匹配的需求企业
 
 
 class User(Base):
@@ -26,7 +25,7 @@ class User(Base):
     full_name = Column(String(100))
     
     # 角色与权限
-    role = Column(Enum(UserRole), default=UserRole.ENTERPRISE_USER)
+    role = Column(Enum(UserRole), default=UserRole.DEMAND, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
     
