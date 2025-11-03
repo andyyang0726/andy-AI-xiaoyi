@@ -1,11 +1,11 @@
-# 重庆人工智能供需对接平台
+# 企业AI需求对接平台
 
 [![部署状态](https://img.shields.io/badge/部署-成功-brightgreen)](https://andyyang0726.github.io/andy-AI-xiaoyi/)
 [![技术栈](https://img.shields.io/badge/React-18-blue)](https://react.dev/)
 [![后端](https://img.shields.io/badge/FastAPI-最新-green)](https://fastapi.tiangolo.com/)
 [![许可证](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-重庆人工智能供需对接平台是一个智能化的AI供需匹配系统，通过智能评估引擎和匹配推荐算法，帮助需求方企业找到最合适的AI供应商，提升对接效率和成功率。
+企业AI需求对接平台是一个智能化的AI供需匹配系统，通过智能评估引擎和匹配推荐算法，帮助需求方企业找到最合适的AI供应商，提升对接效率和成功率。
 
 ## 🌟 核心特性
 

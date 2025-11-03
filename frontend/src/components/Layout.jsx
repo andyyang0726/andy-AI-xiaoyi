@@ -106,7 +106,7 @@ const Layout = () => {
           overflow: 'hidden',
           whiteSpace: 'nowrap'
         }}>
-          {collapsed ? 'AI平台' : '重庆AI供需平台'}
+          {collapsed ? 'AI平台' : '企业AI需求平台'}
         </div>
         <Menu
           theme="dark"
@@ -126,7 +126,7 @@ const Layout = () => {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
           <Title level={4} style={{ margin: 0 }}>
-            重庆人工智能供需对接平台 MVP
+            企业AI需求对接平台
           </Title>
           <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }}>
             <Space style={{ cursor: 'pointer' }}>

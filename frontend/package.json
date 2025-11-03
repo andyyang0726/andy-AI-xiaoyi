@@ -1,6 +1,7 @@
 {
-  "name": "ai-platform-frontend",
+  "name": "enterprise-ai-demand-platform",
   "version": "1.0.0",
+  "description": "企业AI需求对接平台 - 智能化的AI供需匹配系统",
   "private": true,
   "type": "module",
   "scripts": {
