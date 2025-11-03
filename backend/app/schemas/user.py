@@ -9,7 +9,7 @@ class UserBase(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     full_name: Optional[str] = None
-    role: UserRole = UserRole.ENTERPRISE_USER
+    role: UserRole = UserRole.DEMAND  # 默认为需求方
 
 
 class UserCreate(UserBase):
