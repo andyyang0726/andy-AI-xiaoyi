@@ -42,7 +42,7 @@ React Router 正常处理路由
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>重庆人工智能供需对接平台</title>
+    <title>企业AI需求对接平台</title>
     <script>
       // GitHub Pages SPA redirect hack
       (function() {
