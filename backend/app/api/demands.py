@@ -2,8 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
-from ..core import get_db
-from ..models import Demand, DemandStatus, Enterprise
+from ..core import get_db, get_current_user_dependency
+from ..core.permissions import (
+    filter_demands_by_permission,
+    PermissionChecker,
+    get_permission_checker
+)
+from ..models import Demand, DemandStatus, Enterprise, User, UserRole
 from ..schemas import (
     DemandCreate,
     DemandUpdate,
@@ -20,9 +25,31 @@ router = APIRouter(prefix="/demands", tags=["需求管理"])
 @router.post("", response_model=DemandResponse, status_code=status.HTTP_201_CREATED)
 def create_demand(
     demand_data: DemandCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_dependency),
+    permissions: PermissionChecker = Depends(get_permission_checker)
 ):
-    """创建需求"""
+    """创建需求 - 仅管理员和需求方可以创建"""
+    # 检查是否有权限创建需求
+    if not permissions.can_create_demand():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="只有管理员和需求方企业用户可以创建需求"
+        )
+    
+    # 如果是需求方用户，只能为自己的企业创建需求
+    if current_user.role == UserRole.DEMAND:
+        if not current_user.enterprise_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="用户未关联企业，无法创建需求"
+            )
+        if demand_data.enterprise_id != current_user.enterprise_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="只能为自己的企业创建需求"
+            )
+    
     # 验证企业是否存在
     enterprise = db.query(Enterprise).filter(
         Enterprise.id == demand_data.enterprise_id
@@ -50,12 +77,16 @@ def list_demands(
     limit: int = Query(20, ge=1, le=100),
     status_filter: Optional[str] = Query(None),
     enterprise_id: Optional[int] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_dependency)
 ):
-    """获取需求列表"""
+    """获取需求列表 - 根据用户角色过滤"""
     query = db.query(Demand)
     
-    # 应用过滤器
+    # 根据用户权限过滤
+    query = filter_demands_by_permission(query, current_user)
+    
+    # 应用额外过滤器
     if status_filter:
         query = query.filter(Demand.status == status_filter)
     
@@ -75,14 +106,25 @@ def list_demands(
 
 
 @router.get("/{demand_id}", response_model=DemandResponse)
-def get_demand(demand_id: int, db: Session = Depends(get_db)):
-    """获取需求详情"""
+def get_demand(
+    demand_id: int,
+    db: Session = Depends(get_db),
+    permissions: PermissionChecker = Depends(get_permission_checker)
+):
+    """获取需求详情 - 检查查看权限"""
     demand = db.query(Demand).filter(Demand.id == demand_id).first()
     
     if not demand:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="需求不存在"
+        )
+    
+    # 检查是否有权限查看该需求
+    if not permissions.can_view_demand(demand):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="没有权限查看该需求"
         )
     
     return demand
@@ -92,15 +134,23 @@ def get_demand(demand_id: int, db: Session = Depends(get_db)):
 def update_demand(
     demand_id: int,
     demand_data: DemandUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    permissions: PermissionChecker = Depends(get_permission_checker)
 ):
-    """更新需求"""
+    """更新需求 - 仅创建者和管理员可以修改"""
     demand = db.query(Demand).filter(Demand.id == demand_id).first()
     
     if not demand:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="需求不存在"
+        )
+    
+    # 检查是否有权限修改该需求
+    if not permissions.can_modify_demand(demand):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="没有权限修改该需求"
         )
     
     # 更新字段
@@ -266,14 +316,25 @@ def get_recommended_demands(
 
 
 @router.delete("/{demand_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_demand(demand_id: int, db: Session = Depends(get_db)):
-    """删除需求"""
+def delete_demand(
+    demand_id: int,
+    db: Session = Depends(get_db),
+    permissions: PermissionChecker = Depends(get_permission_checker)
+):
+    """删除需求 - 仅创建者和管理员可以删除"""
     demand = db.query(Demand).filter(Demand.id == demand_id).first()
     
     if not demand:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="需求不存在"
+        )
+    
+    # 检查是否有权限删除该需求
+    if not permissions.can_modify_demand(demand):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="没有权限删除该需求"
         )
     
     db.delete(demand)
