@@ -82,7 +82,6 @@ export const usePermissions = () => {
       if (role === UserRole.DEMAND) {
         return [
           { key: '/', label: '我的工作台', visible: true },
-          { key: '/qualification', label: '企业资质', visible: true },
           { key: '/demands', label: '我的需求', visible: true },
           { key: '/matched-suppliers', label: '推荐供应商', visible: true },
           ...baseItems
@@ -92,7 +91,6 @@ export const usePermissions = () => {
       if (role === UserRole.SUPPLY) {
         return [
           { key: '/', label: '我的工作台', visible: true },
-          { key: '/supplier-register', label: '企业资质', visible: true },
           { key: '/supplier-home', label: '企业主页', visible: true },
           { key: '/matched-clients', label: '匹配客户', visible: true },
           ...baseItems
