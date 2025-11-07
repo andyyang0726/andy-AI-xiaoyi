@@ -221,6 +221,7 @@ const Profile = () => {
       </Space>
     </Card>
   );
+  };
 
   const renderEnterpriseInfo = () => {
     console.log('Rendering enterprise info, user:', user, 'enterprise:', enterprise);
