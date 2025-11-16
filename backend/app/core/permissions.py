@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from .database import get_db
 from ..models.user import User, UserRole
-from .auth import get_current_user
+from .security import get_current_user_dependency as get_current_user
 
 
 def require_roles(allowed_roles: List[UserRole]):

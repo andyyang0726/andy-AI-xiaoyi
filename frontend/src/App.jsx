@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import Layout from './components/Layout';
@@ -13,6 +13,8 @@ import RecommendedDemands from './pages/RecommendedDemands';
 import SupplierHome from './pages/SupplierHome';
 import SupplierRegister from './pages/SupplierRegister';
 import DemandQualification from './pages/DemandQualification';
+import MatchedSuppliers from './pages/MatchedSuppliers';
+import MatchedClients from './pages/MatchedClients';
 import Profile from './pages/Profile';
 import './App.css';
 
@@ -23,14 +25,12 @@ const PrivateRoute = ({ children }) => {
 };
 
 function App() {
-  const basename = import.meta.env.MODE === 'production' ? '/andy-AI-xiaoyi' : '';
-  
+  // HashRouter 不需要 basename，直接使用 hash 路由
   return (
     <ConfigProvider locale={zhCN}>
-      <Router basename={basename}>
+      <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/supplier-register" element={<SupplierRegister />} />
           <Route
             path="/"
             element={
@@ -47,7 +47,10 @@ function App() {
             <Route path="demands/:id" element={<DemandDetail />} />
             <Route path="recommended" element={<RecommendedDemands />} />
             <Route path="supplier-home" element={<SupplierHome />} />
+            <Route path="supplier-register" element={<SupplierRegister />} />
             <Route path="qualification" element={<DemandQualification />} />
+            <Route path="matched-suppliers" element={<MatchedSuppliers />} />
+            <Route path="matched-clients" element={<MatchedClients />} />
           </Route>
         </Routes>
       </Router>

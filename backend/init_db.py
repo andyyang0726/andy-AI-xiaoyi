@@ -189,7 +189,7 @@ def init_database():
                 phone="13800000001",
                 full_name="长安汽车联系人",
                 hashed_password=get_password_hash("demo123"),
-                role=UserRole.ENTERPRISE_ADMIN,
+                role=UserRole.DEMAND,
                 enterprise_id=1,
                 is_active=True
             ),
@@ -198,7 +198,7 @@ def init_database():
                 phone="13800000002",
                 full_name="小易智联联系人",
                 hashed_password=get_password_hash("demo123"),
-                role=UserRole.ENTERPRISE_ADMIN,
+                role=UserRole.SUPPLY,
                 enterprise_id=4,
                 is_active=True
             )

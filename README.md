@@ -55,9 +55,20 @@
 
 ## 🚀 快速访问
 
-### 在线体验
+### 🌐 在线体验
+
+#### 生产环境 (推荐)
 - **前端应用**: https://andyyang0726.github.io/andy-AI-xiaoyi/
-- **API文档**: https://8000-ihia78ehq6oi6tkbljqri-02b9cc79.sandbox.novita.ai/api/docs
+- **部署方式**: GitHub Pages
+- **状态**: ✅ 24/7在线稳定运行
+
+#### 开发环境 (完整功能体验)
+- **前端应用**: https://5174-ihia78ehq6oi6tkbljqri-02b9cc79.sandbox.novita.ai
+- **后端API**: https://8000-ihia78ehq6oi6tkbljqri-02b9cc79.sandbox.novita.ai
+- **API文档**: https://8000-ihia78ehq6oi6tkbljqri-02b9cc79.sandbox.novita.ai/docs
+- **状态**: ✅ 开发调试环境
+
+> 💡 **使用建议**: 生产环境访问速度更快；开发环境可体验完整后端功能
 
 ### 测试账号
 ```

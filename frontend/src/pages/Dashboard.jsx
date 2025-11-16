@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Row, Col, Card, Statistic, Button, Table, Tag, Space } from 'antd';
+import { Row, Col, Card, Statistic, Button, Table, Tag, Space, Alert, Result } from 'antd';
 import {
   RiseOutlined,
   BankOutlined,
   FileTextOutlined,
   CheckCircleOutlined,
-  PlusOutlined
+  PlusOutlined,
+  RocketOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import { enterpriseAPI, demandAPI } from '../services/api';
+import { usePermissions } from '../hooks/usePermissions';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const permissions = usePermissions();
   const [stats, setStats] = useState({
     totalEnterprises: 0,
     totalDemands: 0,
@@ -20,10 +24,20 @@ const Dashboard = () => {
   });
   const [recentDemands, setRecentDemands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
+    checkOnboardingStatus();
     loadDashboardData();
   }, []);
+
+  const checkOnboardingStatus = () => {
+    // 检查用户是否需要完善企业信息
+    const user = permissions.user;
+    if (!user.enterprise_id && !permissions.isAdmin) {
+      setNeedsOnboarding(true);
+    }
+  };
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -94,6 +108,63 @@ const Dashboard = () => {
       render: (date) => new Date(date).toLocaleDateString('zh-CN')
     }
   ];
+
+  // 首次登录引导
+  if (needsOnboarding && !permissions.isAdmin) {
+    const isSupply = permissions.isSupply;
+    const isDemand = permissions.isDemand;
+    
+    return (
+      <div>
+        <Result
+          icon={<RocketOutlined style={{ color: '#1890ff' }} />}
+          title="欢迎加入企业AI需求对接平台！"
+          subTitle={`您当前是${isSupply ? '供应商' : '需求方'}企业用户，需要完善企业资质信息才能使用完整功能`}
+          extra={[
+            <Button 
+              type="primary" 
+              size="large" 
+              key="start"
+              onClick={() => navigate(isSupply ? '/supplier-register' : '/qualification')}
+            >
+              {isSupply ? '立即入驻（填写企业信息）' : '完善企业资质'}
+            </Button>,
+            <Button key="later" onClick={() => setNeedsOnboarding(false)}>
+              稍后再说
+            </Button>
+          ]}
+        />
+        
+        <Alert
+          message="温馨提示"
+          description={
+            <div>
+              <p>完善企业资质后，您将可以：</p>
+              <ul style={{ marginBottom: 0 }}>
+                {isSupply ? (
+                  <>
+                    <li>✅ 查看平台推荐的需求</li>
+                    <li>✅ 查看匹配到您的客户</li>
+                    <li>✅ 展示企业能力和案例</li>
+                  </>
+                ) : (
+                  <>
+                    <li>✅ 发布AI需求</li>
+                    <li>✅ 获得智能评估和供应商匹配</li>
+                    <li>✅ 查看推荐的供应商</li>
+                  </>
+                )}
+              </ul>
+            </div>
+          }
+          type="info"
+          showIcon
+          icon={<InfoCircleOutlined />}
+          style={{ marginTop: 24 }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div>
