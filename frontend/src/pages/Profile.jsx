@@ -48,17 +48,32 @@ const Profile = () => {
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const userDataStr = localStorage.getItem('user');
+      console.log('Raw user data from localStorage:', userDataStr);
+      
+      if (!userDataStr) {
+        console.error('No user data in localStorage');
+        message.error('未找到用户信息，请重新登录');
+        navigate('/login');
+        return;
+      }
+
+      const userData = JSON.parse(userDataStr);
+      console.log('Parsed user data:', userData);
       setUser(userData);
 
       // 如果用户有关联企业，获取企业信息
       if (userData.enterprise_id) {
+        console.log('Fetching enterprise:', userData.enterprise_id);
         const response = await api.get(`/enterprises/${userData.enterprise_id}`);
+        console.log('Enterprise data:', response.data);
         setEnterprise(response.data);
+      } else {
+        console.log('User has no enterprise_id');
       }
     } catch (error) {
-      message.error('获取用户信息失败');
       console.error('Error fetching profile:', error);
+      message.error('获取用户信息失败: ' + (error.message || '未知错误'));
     } finally {
       setLoading(false);
     }
@@ -136,25 +151,30 @@ const Profile = () => {
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
-  const renderUserInfo = () => (
-    <Card 
-      title={
-        <Space>
-          <UserOutlined />
-          <span>个人信息</span>
-        </Space>
-      }
-      extra={
-        <Button 
-          type="primary" 
-          icon={<EditOutlined />} 
-          onClick={handleEditProfile}
-        >
-          编辑信息
-        </Button>
-      }
-      loading={loading}
-    >
+  const renderUserInfo = () => {
+    console.log('Rendering user info, user:', user, 'loading:', loading);
+    
+    return (
+      <Card 
+        title={
+          <Space>
+            <UserOutlined />
+            <span>个人信息</span>
+          </Space>
+        }
+        extra={
+          user && (
+            <Button 
+              type="primary" 
+              icon={<EditOutlined />} 
+              onClick={handleEditProfile}
+            >
+              编辑信息
+            </Button>
+          )
+        }
+        loading={loading}
+      >
       <Descriptions bordered column={2}>
         <Descriptions.Item label="姓名" span={1}>
           {user?.full_name || '-'}
@@ -201,9 +221,13 @@ const Profile = () => {
       </Space>
     </Card>
   );
+  };
 
   const renderEnterpriseInfo = () => {
+    console.log('Rendering enterprise info, user:', user, 'enterprise:', enterprise);
+    
     if (!user?.enterprise_id) {
+      console.log('User has no enterprise_id, showing registration prompt');
       return (
         <Card 
           title={
@@ -217,24 +241,39 @@ const Profile = () => {
             message="未关联企业"
             description={
               <div>
-                <p>您的账号尚未关联企业信息。请选择您的企业角色并完成资质注册。</p>
+                <p>您的账号尚未关联企业信息。请根据您的角色完成企业资质注册：</p>
                 <p style={{ marginTop: 8, color: '#666' }}>
-                  <strong>需求方企业</strong>：需要AI技术解决方案的企业<br/>
-                  <strong>供应方企业</strong>：提供AI技术服务的企业
+                  <strong>需求方企业（demand）</strong>：需要AI技术解决方案的企业<br/>
+                  <strong>供应方企业（supply）</strong>：提供AI技术服务的企业
                 </p>
                 <Space style={{ marginTop: 16 }}>
-                  <Button 
-                    type="primary" 
-                    size="large"
-                    onClick={() => setRoleSelectionVisible(true)}
-                  >
-                    选择角色并注册企业
-                  </Button>
-                  <Button 
-                    onClick={() => navigate('/enterprises')}
-                  >
-                    查看企业列表
-                  </Button>
+                  {user?.role === 'supply' && (
+                    <Button 
+                      type="primary" 
+                      size="large"
+                      onClick={() => navigate('/supplier-register')}
+                    >
+                      供应商企业入驻
+                    </Button>
+                  )}
+                  {user?.role === 'demand' && (
+                    <Button 
+                      type="primary" 
+                      size="large"
+                      onClick={() => navigate('/qualification')}
+                    >
+                      完善企业资质
+                    </Button>
+                  )}
+                  {!user?.role || (user?.role !== 'supply' && user?.role !== 'demand') && (
+                    <Button 
+                      type="primary" 
+                      size="large"
+                      onClick={() => setRoleSelectionVisible(true)}
+                    >
+                      选择角色并注册企业
+                    </Button>
+                  )}
                 </Space>
               </div>
             }
@@ -460,6 +499,25 @@ const Profile = () => {
       children: renderEnterpriseInfo()
     }
   ];
+
+  // 如果没有用户数据，显示提示
+  if (!user && !loading) {
+    return (
+      <Card>
+        <Alert
+          message="无法加载用户信息"
+          description="请尝试重新登录"
+          type="error"
+          showIcon
+          action={
+            <Button onClick={() => navigate('/login')}>
+              前往登录
+            </Button>
+          }
+        />
+      </Card>
+    );
+  }
 
   return (
     <div>
